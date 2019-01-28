@@ -57,6 +57,49 @@ aliases:
       name: 'Pushing docker image with tag'
       command: docker push heathmont/$CIRCLE_PROJECT_REPONAME:$CIRCLE_TAG
 
+  notify_on_slack: &notify_on_slack
+    run:
+      name: 'Notify on slack on success'
+      command: |
+        bash -c "curl -X POST -H 'Content-type: application/json' --data ' \
+          { \
+              \"attachments\": [ \
+                  { \
+                      \"fallback\": \"$CIRCLE_PROJECT_REPONAME:$CIRCLE_TAG - https://hub.docker.com/r/heathmont/$CIRCLE_PROJECT_REPONAME/tags\", \
+                      \"color\": \"#36a64f\", \
+                      \"title\": \"New docker image built\", \
+                      \"title_link\": \"https://hub.docker.com/r/heathmont/$CIRCLE_PROJECT_REPONAME/tags\", \
+                      \"text\": \"$CIRCLE_PROJECT_REPONAME:$CIRCLE_TAG\" \
+                  }, \
+                  { \
+                    \"fallback\": \"View release notes at https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME/releases/tag/$CIRCLE_TAG\", \
+                    \"actions\": [ \
+                      { \
+                        \"type\": \"button\", \
+                        \"text\": \"View release notes\", \
+                        \"url\": \"https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME/releases/tag/$CIRCLE_TAG\" \
+                      }, \
+                      { \
+                        \"type\": \"button\", \
+                        \"text\": \"Deploy to prelive\", \
+                        \"url\": \"https://monitoring.heathmont.net/deploy/p/?env=p&tag=sportsbet-auto-$CIRCLE_PROJECT_REPONAME-$CIRCLE_TAG&stack=sportsbet\" \
+                      }, \
+                      { \
+                        \"type\": \"button\", \
+                        \"text\": \"Deploy to staging\", \
+                        \"url\": \"https://monitoring.heathmont.net/deploy/s/?env=s&tag=sportsbet-auto-$CIRCLE_PROJECT_REPONAME-$CIRCLE_TAG&stack=sportsbet\" \
+                      }, \
+                      { \
+                        \"type\": \"button\", \
+                        \"text\": \"Open branch\", \
+                        \"url\": \"https://github.com/coingaming/stacks/tree/sportsbet-auto-release\" \
+                      } \
+                    ] \
+                  } \
+              ] \
+          } \
+        ' https://hooks.slack.com/services/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"
+
   setup_github_ssh: &setup_github_ssh
     run:
       name: 'Setting up github SSH key'
@@ -144,7 +187,6 @@ jobs:
       - *docker_push_tag
 
   release_to_stacks:
-    docker:
     <<: *default
     steps:
       - *setup_github_ssh
@@ -157,9 +199,10 @@ jobs:
       - run: mv docker-compose.sportsbet.temp.yml docker-compose.sportsbet.yml
       - run: git status
       - run: git commit -a -m "Bumping $CIRCLE_PROJECT_REPONAME version to $CIRCLE_TAG"
-      - run: git tag "sportsbet-auto-apollo-$CIRCLE_TAG"
+      - run: git tag "sportsbet-auto-$CIRCLE_PROJECT_REPONAME-$CIRCLE_TAG"
       - run: git push
       - run: git push --tags
+      - *notify_on_slack
 
   deploy_to_edge:
     <<: *edge_build_image
