@@ -230,9 +230,6 @@ jobs:
           at: ./
       - *install_token
       - run: yarn publish:packages
-      - run: git checkout develop
-      - run: git merge master
-      - run: git push
 
 workflows:
   version: 2
