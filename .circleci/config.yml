@@ -37,10 +37,10 @@ aliases:
       name: 'Building docker image from branch'
       command: docker build -t heathmont/$CIRCLE_PROJECT_REPONAME:$CIRCLE_BRANCH .
 
-  docker_build_tag: &docker_build_tag
+  docker_tag_master_image: &docker_tag_master_image
     run:
-      name: 'Building docker image from tag'
-      command: docker build -t heathmont/$CIRCLE_PROJECT_REPONAME:$CIRCLE_TAG .
+      name: 'Tag master image with tag'
+      command: docker tag heathmont/$CIRCLE_PROJECT_REPONAME:master heathmont/$CIRCLE_PROJECT_REPONAME:$CIRCLE_TAG
 
   docker_login: &docker_login
     run:
@@ -134,6 +134,32 @@ jobs:
       - *docker_build_branch
       - *docker_login
       - *docker_push_branch
+
+  tag_master_image:
+    <<: *default
+    steps:
+      - setup_remote_docker
+      - *docker_login
+      - *docker_tag_master_image
+      - *docker_push_tag
+
+  release_to_stacks:
+    docker:
+    <<: *default
+    steps:
+      - *setup_github_ssh
+      - run: git clone -b sportsbet-auto-release git@github.com:coingaming/stacks.git .
+      - *setup_git_config
+      - run: git branch --set-upstream-to=origin/sportsbet-auto-release sportsbet-auto-release
+      - run: git pull
+      - run: sed -E "s/($CIRCLE_PROJECT_REPONAME:v)([0-9.]+)/$CIRCLE_PROJECT_REPONAME:$CIRCLE_TAG/g" docker-compose.sportsbet.yml
+      - run: sed -E "s/($CIRCLE_PROJECT_REPONAME:v)([0-9.]+)/$CIRCLE_PROJECT_REPONAME:$CIRCLE_TAG/g" docker-compose.sportsbet.yml > docker-compose.sportsbet.temp.yml
+      - run: mv docker-compose.sportsbet.temp.yml docker-compose.sportsbet.yml
+      - run: git status
+      - run: git commit -a -m "Bumping $CIRCLE_PROJECT_REPONAME version to $CIRCLE_TAG"
+      - run: git tag "sportsbet-auto-apollo-$CIRCLE_TAG"
+      - run: git push
+      - run: git push --tags
 
   deploy_to_edge:
     <<: *edge_build_image
@@ -244,6 +270,22 @@ workflows:
             branches:
               only: master
           requires:
-            - dependencies
-            - lint
-            - build_site
+            - build_branch_and_push
+
+      - tag_master_image:
+          context: global
+          filters:
+            branches:
+              ignore: /.*/
+            tags:
+              only: /^v.*/
+
+      - release_to_stacks:
+          context: global
+          filters:
+            branches:
+              ignore: /.*/
+            tags:
+              only: /^v.*/
+          requires:
+            - tag_master_image
