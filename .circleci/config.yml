@@ -37,6 +37,11 @@ aliases:
       name: 'Building docker image from branch'
       command: docker build -t heathmont/$CIRCLE_PROJECT_REPONAME:$CIRCLE_BRANCH .
 
+  docker_pull_master_image: &docker_pull_master_image
+    run:
+      name: 'Pull master image'
+      command: docker pull heathmont/$CIRCLE_PROJECT_REPONAME:master
+
   docker_tag_master_image: &docker_tag_master_image
     run:
       name: 'Tag master image with tag'
@@ -195,6 +200,7 @@ jobs:
     steps:
       - setup_remote_docker
       - *docker_login
+      - *docker_pull_master_image
       - *docker_tag_master_image
       - *docker_push_tag
 
