@@ -140,6 +140,14 @@ jobs:
           at: ./
       - run: yarn lint:ts
 
+  test:
+    <<: *default
+    steps:
+      - checkout
+      - attach_workspace:
+          at: ./
+      - run: yarn test
+
   build:
     <<: *default
     steps:
@@ -149,6 +157,10 @@ jobs:
       - run:
           name: Running typescript build
           command: yarn build
+      - persist_to_workspace:
+          root: ./
+          paths:
+            - packages/*/lib/*
 
   build_site:
     <<: *default
@@ -238,13 +250,18 @@ workflows:
       - dependencies:
           context: global
       - lint:
-         context: global
-         requires:
-           - dependencies
+          context: global
+          requires:
+            - dependencies
       - build:
           context: global
           requires:
             - dependencies
+      - test:
+          context: global
+          requires:
+            - dependencies
+            - build
 
   build-branch:
     jobs:
@@ -273,6 +290,16 @@ workflows:
                 - master
           requires:
             - dependencies
+      - test:
+          context: global
+          filters:
+            branches:
+              only:
+                - develop
+                - master
+          requires:
+            - dependencies
+            - build
 
       - build_site:
           context: global
@@ -294,6 +321,7 @@ workflows:
           requires:
             - dependencies
             - lint
+            - test
             - build_site
 
       - deploy_to_edge:
