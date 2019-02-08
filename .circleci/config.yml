@@ -177,12 +177,12 @@ jobs:
           name: Running typescript build
           command: yarn build
       - run:
-          name: Running docz build
-          command: yarn docz:build
+          name: Running docs build
+          command: yarn docs:build
       - persist_to_workspace:
           root: ./
           paths:
-            - .docz/dist
+            - docs/public
 
   build_branch_and_push:
     <<: *default
