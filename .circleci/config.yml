@@ -18,14 +18,19 @@ aliases:
   restore_cache: &restore_cache
     restore_cache:
       name: 'Restoring cache'
-      key: dependency-cache-{{ checksum "package.json" }}
+      keys:
+        - project-deps-v3-{{ .Environment.CIRCLE_PROJECT_REPONAME }}-{{ checksum "yarn.lock" }}-{{ .Revision }}
+        - project-deps-v3-{{ .Environment.CIRCLE_PROJECT_REPONAME }}-{{ checksum "yarn.lock" }}
+        - project-deps-v3-{{ .Environment.CIRCLE_PROJECT_REPONAME }}
 
   save_cache: &save_cache
     save_cache:
       name: 'Saving cache'
-      key: dependency-cache-{{ checksum "package.json" }}
+      key: project-deps-v3-{{ .Environment.CIRCLE_PROJECT_REPONAME }}-{{ checksum "yarn.lock" }}-{{ .Revision }}
       paths:
         - node_modules
+        - packages/*/node_modules/*
+        - docs/node_modules/*
 
   install_token: &install_token
     run:
@@ -136,6 +141,8 @@ jobs:
           root: ./
           paths:
             - node_modules
+            - packages/*/node_modules/*
+            - docs/node_modules/*
 
   lint:
     <<: *default
@@ -177,12 +184,12 @@ jobs:
           name: Running typescript build
           command: yarn build
       - run:
-          name: Running docz build
-          command: yarn docz:build
+          name: Running docs build
+          command: yarn docs:build
       - persist_to_workspace:
           root: ./
           paths:
-            - .docz/dist
+            - docs/public
 
   build_branch_and_push:
     <<: *default
