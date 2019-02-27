@@ -160,6 +160,14 @@ jobs:
           at: ./
       - run: yarn test
 
+  bundlesize:
+    <<: *default
+    steps:
+      - checkout
+      - attach_workspace:
+          at: ./
+      - run: yarn bundlesize
+
   build:
     <<: *default
     steps:
@@ -275,6 +283,13 @@ workflows:
           requires:
             - dependencies
             - build
+      - bundlesize:
+          context: global
+          requires:
+            - dependencies
+            - build
+            - lint
+            - test
 
   build-branch:
     jobs:
@@ -313,6 +328,16 @@ workflows:
           requires:
             - dependencies
             - build
+      - bundlesize:
+          context: global
+          filters:
+            branches:
+              only:
+                - develop
+                - master
+          requires:
+            - dependencies
+            - build
 
       - build_site:
           context: global
@@ -336,6 +361,7 @@ workflows:
             - lint
             - test
             - build_site
+            - bundlesize
 
       - deploy_to_edge:
           context: global
