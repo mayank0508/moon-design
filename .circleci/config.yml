@@ -287,9 +287,6 @@ workflows:
           context: global
           requires:
             - dependencies
-            - build
-            - lint
-            - test
 
   build-branch:
     jobs:
@@ -337,7 +334,6 @@ workflows:
                 - master
           requires:
             - dependencies
-            - build
 
       - build_site:
           context: global
