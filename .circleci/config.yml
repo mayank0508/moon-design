@@ -266,6 +266,9 @@ jobs:
       - run: |
           DOCKER_HOST=edge-sportsbet.ci.testenv.io
           ~/.stacks/scripts/deploy-service sportsbet design heathmont/$CIRCLE_PROJECT_REPONAME:$CIRCLE_BRANCH
+      - run: |
+          DOCKER_HOST=edge-sportsbet.ci.testenv.io
+          ~/.stacks/scripts/deploy-service sportsbet user-portal heathmont/sportsbet-user-portal:$CIRCLE_BRANCH
 
   publish:
     <<: *default
