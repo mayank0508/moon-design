@@ -29,7 +29,7 @@ aliases:
       key: project-deps-v3-{{ .Environment.CIRCLE_PROJECT_REPONAME }}-{{ checksum "yarn.lock" }}-{{ .Revision }}
       paths:
         - node_modules
-        - packages/*/node_modules/*
+        - design/*/node_modules/*
         - docs/node_modules/*
 
   install_token: &install_token
@@ -40,7 +40,7 @@ aliases:
   docker_build_branch: &docker_build_branch
     run:
       name: 'Building docker image from branch'
-      command: docker build -t heathmont/$CIRCLE_PROJECT_REPONAME:$CIRCLE_BRANCH .
+      command: docker build -f .config/docker/Dockerfile -t heathmont/$CIRCLE_PROJECT_REPONAME:$CIRCLE_BRANCH .
 
   docker_pull_master_image: &docker_pull_master_image
     run:
@@ -141,7 +141,7 @@ jobs:
           root: ./
           paths:
             - node_modules
-            - packages/*/node_modules/*
+            - design/*/node_modules/*
             - docs/node_modules/*
 
   lint:
@@ -180,7 +180,7 @@ jobs:
       - persist_to_workspace:
           root: ./
           paths:
-            - packages/*/lib/*
+            - design/*/lib/*
 
   build_site:
     <<: *default
