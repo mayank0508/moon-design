@@ -65,7 +65,7 @@ aliases:
   docker_tag_user_portal_master_image: &docker_tag_user_portal_master_image
     run:
       name: 'Tag user portal master image with tag'
-      command: docker tag heathmont/sportsbet-user-portal:master heathmont/$CIRCLE_PROJECT_REPONAME:$CIRCLE_TAG
+      command: docker tag heathmont/sportsbet-user-portal:master heathmont/sportsbet-user-portal:$CIRCLE_TAG
 
   docker_user_portal_push_tag: &docker_user_portal_push_tag
     run:
