@@ -175,6 +175,9 @@ jobs:
       - attach_workspace:
           at: ./
       - run:
+          name: Preparing static assets
+          command: yarn docs:assets
+      - run:
           name: Running docs build
           command: yarn docs:build
       - persist_to_workspace:
