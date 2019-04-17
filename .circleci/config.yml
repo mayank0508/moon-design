@@ -426,6 +426,7 @@ workflows:
               only: master
           requires:
             - build_docs_and_push
+            - build_portals_and_push
 
       - tag_master_image:
           context: global
