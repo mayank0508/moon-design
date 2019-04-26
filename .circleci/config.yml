@@ -1,7 +1,7 @@
 aliases:
   default: &default
     docker:
-      - image: circleci/node:latest
+      - image: circleci/node:11
 
   edge_build_image: &edge_build_image
     docker:
