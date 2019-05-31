@@ -40,7 +40,7 @@ aliases:
   docker_build_branch: &docker_build_branch
     run:
       name: 'Building docker image from branch'
-      command: docker build -f .config/docker/Dockerfile -t heathmont/$CIRCLE_PROJECT_REPONAME:$CIRCLE_BRANCH .
+      command: docker build -f .config/docker/portals/Dockerfile -t heathmont/$CIRCLE_PROJECT_REPONAME:$CIRCLE_BRANCH .
 
   docker_pull_master_image: &docker_pull_master_image
     run:
@@ -209,7 +209,7 @@ jobs:
       - *docker_login
       - run:
           name: 'Build user portal docker image'
-          command: docker build -f ./portals/user-portal/.config/docker/Dockerfile -t heathmont/sportsbet-user-portal:$CIRCLE_BRANCH ./portals/user-portal
+          command: docker build -f ./portals/user-portal/.config/docker/portals/Dockerfile -t heathmont/sportsbet-user-portal:$CIRCLE_BRANCH ./portals/user-portal
       - run:
           name: 'Push user portal docker image'
           command: docker push heathmont/sportsbet-user-portal:$CIRCLE_BRANCH
