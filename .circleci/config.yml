@@ -288,6 +288,8 @@ jobs:
       - run: mv docker-compose.sportsbet.temp.yml docker-compose.sportsbet.yml
       - run: sed -E "s/(sportsbet-user-portal:v)([0-9.]+)/sportsbet-user-portal:$CIRCLE_TAG/g" docker-compose.sportsbet.yml > docker-compose.sportsbet.temp.yml
       - run: mv docker-compose.sportsbet.temp.yml docker-compose.sportsbet.yml
+      - run: sed -E "s/(sportsbet-assets:v)([0-9.]+)/sportsbet-assets:$CIRCLE_TAG/g" docker-compose.sportsbet.yml > docker-compose.sportsbet.temp.yml
+      - run: mv docker-compose.sportsbet.temp.yml docker-compose.sportsbet.yml
       - run: git status
       - run: git commit -a -m "Bumping $CIRCLE_PROJECT_REPONAME version to $CIRCLE_TAG"
       - run: git tag "sportsbet-auto-release-$CIRCLE_PROJECT_REPONAME-$CIRCLE_TAG"
