@@ -436,6 +436,20 @@ workflows:
             - build_portals
             - bundlesize
 
+      - build_assets_and_push:
+          context: global
+          filters:
+            branches:
+              only:
+                - develop
+                - master
+          requires:
+            - dependencies
+            - lint
+            - test
+            - build_portals
+            - bundlesize
+
       - build_docs_and_push:
           context: global
           filters:
