@@ -37,10 +37,15 @@ aliases:
       name: 'Setting up private repository NPM access'
       command: echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" > .npmrc
 
-  docker_build_branch: &docker_build_branch
+  docker_build_docs_branch: &docker_build_docs_branch
     run:
-      name: 'Building docker image from branch'
-      command: docker build -f .config/docker/Dockerfile -t heathmont/$CIRCLE_PROJECT_REPONAME:$CIRCLE_BRANCH .
+      name: 'Building docker docs image from branch'
+      command: docker build -f .config/docker/docs/Dockerfile -t heathmont/$CIRCLE_PROJECT_REPONAME:$CIRCLE_BRANCH .
+
+  docker_build_assets_branch: &docker_build_assets_branch
+    run:
+      name: 'Building docker assets image from branch'
+      command: docker build -f .config/docker/assets/Dockerfile -t heathmont/sportsbet-assets:$CIRCLE_BRANCH .
 
   docker_pull_master_image: &docker_pull_master_image
     run:
@@ -72,15 +77,35 @@ aliases:
       name: 'Pushing user portal docker image with tag'
       command: docker push heathmont/sportsbet-user-portal:$CIRCLE_TAG
 
+  docker_pull_assets_master_image: &docker_pull_assets_master_image
+    run:
+      name: 'Pull assets master image'
+      command: docker pull heathmont/sportsbet-assets:master
+
+  docker_tag_assets_master_image: &docker_tag_assets_master_image
+    run:
+      name: 'Tag assets master image with tag'
+      command: docker tag heathmont/sportsbet-assets:master heathmont/sportsbet-assets:$CIRCLE_TAG
+
+  docker_assets_push_tag: &docker_assets_push_tag
+    run:
+      name: 'Pushing assets docker image with tag'
+      command: docker push heathmont/sportsbet-assets:$CIRCLE_TAG
+
   docker_login: &docker_login
     run:
       name: 'Logging into docker'
       command: docker login -u $DOCKER_USER -p $DOCKER_PASS
 
-  docker_push_branch: &docker_push_branch
+  docker_push_docs_branch: &docker_push_docs_branch
     run:
-      name: 'Pushing docker image with branch name'
+      name: 'Pushing docker docs image with branch name'
       command: docker push heathmont/$CIRCLE_PROJECT_REPONAME:$CIRCLE_BRANCH
+
+  docker_push_assets_branch: &docker_push_assets_branch
+    run:
+      name: 'Pushing docker assets image with branch name'
+      command: docker push heathmont/sportsbet-assets:$CIRCLE_BRANCH
 
   notify_on_slack: &notify_on_slack
     run:
@@ -209,7 +234,7 @@ jobs:
       - *docker_login
       - run:
           name: 'Build user portal docker image'
-          command: docker build -f ./portals/user-portal/.config/docker/Dockerfile -t heathmont/sportsbet-user-portal:$CIRCLE_BRANCH ./portals/user-portal
+          command: docker build -f ./portals/user-portal/.config/docker/portals/Dockerfile -t heathmont/sportsbet-user-portal:$CIRCLE_BRANCH ./portals/user-portal
       - run:
           name: 'Push user portal docker image'
           command: docker push heathmont/sportsbet-user-portal:$CIRCLE_BRANCH
@@ -221,9 +246,20 @@ jobs:
       - attach_workspace:
           at: ./
       - setup_remote_docker
-      - *docker_build_branch
+      - *docker_build_docs_branch
       - *docker_login
-      - *docker_push_branch
+      - *docker_push_docs_branch
+
+  build_assets_and_push:
+    <<: *default
+    steps:
+      - checkout
+      - attach_workspace:
+          at: ./
+      - setup_remote_docker
+      - *docker_build_assets_branch
+      - *docker_login
+      - *docker_push_assets_branch
 
   tag_master_image:
     <<: *default
@@ -236,6 +272,9 @@ jobs:
       - *docker_pull_user_portal_master_image
       - *docker_tag_user_portal_master_image
       - *docker_user_portal_push_tag
+      - *docker_pull_assets_master_image
+      - *docker_tag_assets_master_image
+      - *docker_assets_push_tag
 
   release_to_stacks:
     <<: *default
