@@ -234,7 +234,7 @@ jobs:
       - *docker_login
       - run:
           name: 'Build user portal docker image'
-          command: docker build -f ./portals/user-portal/.config/docker/portals/Dockerfile -t heathmont/sportsbet-user-portal:$CIRCLE_BRANCH ./portals/user-portal
+          command: docker build -f ./portals/user-portal/.config/docker/Dockerfile -t heathmont/sportsbet-user-portal:$CIRCLE_BRANCH ./portals/user-portal
       - run:
           name: 'Push user portal docker image'
           command: docker push heathmont/sportsbet-user-portal:$CIRCLE_BRANCH
@@ -423,6 +423,20 @@ workflows:
             - build_portals
 
       - build_portals_and_push:
+          context: global
+          filters:
+            branches:
+              only:
+                - develop
+                - master
+          requires:
+            - dependencies
+            - lint
+            - test
+            - build_portals
+            - bundlesize
+
+      - build_assets_and_push:
           context: global
           filters:
             branches:
