@@ -333,10 +333,6 @@ workflows:
     jobs:
       - dependencies:
           context: global
-      - lint:
-          context: global
-          requires:
-            - dependencies
       - build:
           context: global
           requires:
@@ -345,6 +341,12 @@ workflows:
           context: global
           requires:
             - build
+      - lint:
+          context: global
+          requires:
+            - dependencies
+            - build
+            - build_portals
       - test:
           context: global
           requires:
@@ -363,15 +365,6 @@ workflows:
               only:
                 - develop
                 - master
-      - lint:
-          context: global
-          filters:
-            branches:
-              only:
-                - develop
-                - master
-          requires:
-            - dependencies
 
       - build:
           context: global
@@ -402,6 +395,18 @@ workflows:
                 - master
           requires:
             - build
+
+      - lint:
+          context: global
+          filters:
+            branches:
+              only:
+                - develop
+                - master
+          requires:
+            - dependencies
+            - build
+            - build_portals
 
       - test:
           context: global
