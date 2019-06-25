@@ -160,7 +160,7 @@ jobs:
       - checkout
       - attach_workspace:
           at: ./
-      - run: yarn lint:ts
+      - run: yarn lint
 
   test:
     <<: *default
