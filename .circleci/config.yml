@@ -326,6 +326,15 @@ jobs:
           at: ./
       - *install_token
       - run: yarn publish:packages
+      - run:
+          name: 'Update `develop` with `master`'
+          command: |
+            git pull
+            git checkout develop
+            git branch --set-upstream-to=origin/develop develop
+            git pull
+            git merge master
+            git push
 
 workflows:
   version: 2
