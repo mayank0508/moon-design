@@ -171,14 +171,6 @@ jobs:
           at: ./
       - run: yarn test
 
-  bundlesize_id-portal:
-    <<: *default
-    steps:
-      - checkout
-      - attach_workspace:
-          at: ./
-      - run: yarn id-portal bundlesize
-
   bundlesize_user-portal:
     <<: *default
     steps:
@@ -213,20 +205,6 @@ jobs:
           root: ./
           paths:
             - docs/public
-
-  build_id-portal:
-    <<: *default
-    steps:
-      - checkout
-      - attach_workspace:
-          at: ./
-      - run:
-          name: 'Build id-portal dist folder'
-          command: yarn id-portal build
-      - persist_to_workspace:
-          root: ./
-          paths:
-            - portals/id-portal/dist/*
 
   build_user-portal:
     <<: *default
@@ -364,10 +342,6 @@ workflows:
           context: global
           requires:
             - dependencies
-      - build_id-portal:
-          context: global
-          requires:
-            - build
       - build_user-portal:
           context: global
           requires:
@@ -377,16 +351,11 @@ workflows:
           requires:
             - dependencies
             - build
-            - build_id-portal
             - build_user-portal
       - test:
           context: global
           requires:
             - build
-      - bundlesize_id-portal:
-          context: global
-          requires:
-            - build_id-portal
       - bundlesize_user-portal:
           context: global
           requires:
@@ -422,16 +391,6 @@ workflows:
           requires:
             - build
 
-      - build_id-portal:
-          context: global
-          filters:
-            branches:
-              only:
-                - develop
-                - master
-          requires:
-            - build
-
       - build_user-portal:
           context: global
           filters:
@@ -452,7 +411,6 @@ workflows:
           requires:
             - dependencies
             - build
-            - build_id-portal
             - build_user-portal
 
       - test:
@@ -465,16 +423,6 @@ workflows:
           requires:
             - dependencies
             - build
-
-      - bundlesize_id-portal:
-          context: global
-          filters:
-            branches:
-              only:
-                - develop
-                - master
-          requires:
-            - build_id-portal
 
       - bundlesize_user-portal:
           context: global
@@ -511,9 +459,7 @@ workflows:
             - dependencies
             - lint
             - test
-            - build_id-portal
             - build_user-portal
-            - bundlesize_id-portal
             - bundlesize_user-portal
 
       - build_docs_and_push:
@@ -528,7 +474,6 @@ workflows:
             - lint
             - test
             - build_site
-            - bundlesize_id-portal
             - bundlesize_user-portal
 
       - deploy_to_edge:
