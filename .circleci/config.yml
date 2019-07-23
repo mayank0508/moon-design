@@ -31,6 +31,7 @@ aliases:
         - node_modules
         - design/*/node_modules/*
         - docs/node_modules/*
+        - portals/*/node_modules/*
 
   install_token: &install_token
     run:
@@ -61,21 +62,6 @@ aliases:
     run:
       name: 'Pushing docker image with tag'
       command: docker push heathmont/$CIRCLE_PROJECT_REPONAME:$CIRCLE_TAG
-
-  docker_pull_user_portal_master_image: &docker_pull_user_portal_master_image
-    run:
-      name: 'Pull user portal master image'
-      command: docker pull heathmont/sportsbet-user-portal:master
-
-  docker_tag_user_portal_master_image: &docker_tag_user_portal_master_image
-    run:
-      name: 'Tag user portal master image with tag'
-      command: docker tag heathmont/sportsbet-user-portal:master heathmont/sportsbet-user-portal:$CIRCLE_TAG
-
-  docker_user_portal_push_tag: &docker_user_portal_push_tag
-    run:
-      name: 'Pushing user portal docker image with tag'
-      command: docker push heathmont/sportsbet-user-portal:$CIRCLE_TAG
 
   docker_pull_assets_master_image: &docker_pull_assets_master_image
     run:
@@ -171,22 +157,6 @@ jobs:
           at: ./
       - run: yarn test
 
-  bundlesize_id-portal:
-    <<: *default
-    steps:
-      - checkout
-      - attach_workspace:
-          at: ./
-      - run: yarn id-portal bundlesize
-
-  bundlesize_user-portal:
-    <<: *default
-    steps:
-      - checkout
-      - attach_workspace:
-          at: ./
-      - run: yarn user-portal bundlesize
-
   build:
     <<: *default
     steps:
@@ -200,7 +170,6 @@ jobs:
           root: ./
           paths:
             - design/*/lib/*
-            - portals/*/dist/*
 
   build_site:
     <<: *default
@@ -213,49 +182,6 @@ jobs:
           root: ./
           paths:
             - docs/public
-
-  build_id-portal:
-    <<: *default
-    steps:
-      - checkout
-      - attach_workspace:
-          at: ./
-      - run:
-          name: 'Build id-portal dist folder'
-          command: yarn id-portal build
-      - persist_to_workspace:
-          root: ./
-          paths:
-            - portals/id-portal/dist/*
-
-  build_user-portal:
-    <<: *default
-    steps:
-      - checkout
-      - attach_workspace:
-          at: ./
-      - run:
-          name: 'Build user-portal dist folder'
-          command: yarn user-portal build
-      - persist_to_workspace:
-          root: ./
-          paths:
-            - portals/user-portal/dist/*
-
-  build_user-portal_and_push:
-    <<: *default
-    steps:
-      - checkout
-      - attach_workspace:
-          at: ./
-      - setup_remote_docker
-      - *docker_login
-      - run:
-          name: 'Build user portal docker image'
-          command: docker build -f ./portals/user-portal/.config/docker/Dockerfile -t heathmont/sportsbet-user-portal:$CIRCLE_BRANCH ./portals/user-portal
-      - run:
-          name: 'Push user portal docker image'
-          command: docker push heathmont/sportsbet-user-portal:$CIRCLE_BRANCH
 
   build_docs_and_push:
     <<: *default
@@ -287,9 +213,6 @@ jobs:
       - *docker_pull_master_image
       - *docker_tag_master_image
       - *docker_push_tag
-      - *docker_pull_user_portal_master_image
-      - *docker_tag_user_portal_master_image
-      - *docker_user_portal_push_tag
       - *docker_pull_assets_master_image
       - *docker_tag_assets_master_image
       - *docker_assets_push_tag
@@ -303,8 +226,6 @@ jobs:
       - run: git branch --set-upstream-to=origin/sportsbet-auto-release sportsbet-auto-release
       - run: git pull
       - run: sed -E "s/($CIRCLE_PROJECT_REPONAME:v)([0-9.]+)/$CIRCLE_PROJECT_REPONAME:$CIRCLE_TAG/g" docker-compose.sportsbet.yml > docker-compose.sportsbet.temp.yml
-      - run: mv docker-compose.sportsbet.temp.yml docker-compose.sportsbet.yml
-      - run: sed -E "s/(sportsbet-user-portal:v)([0-9.]+)/sportsbet-user-portal:$CIRCLE_TAG/g" docker-compose.sportsbet.yml > docker-compose.sportsbet.temp.yml
       - run: mv docker-compose.sportsbet.temp.yml docker-compose.sportsbet.yml
       - run: sed -E "s/(sportsbet-assets:v)([0-9.]+)/sportsbet-assets:$CIRCLE_TAG/g" docker-compose.sportsbet.yml > docker-compose.sportsbet.temp.yml
       - run: mv docker-compose.sportsbet.temp.yml docker-compose.sportsbet.yml
@@ -328,9 +249,6 @@ jobs:
       - run: |
           DOCKER_HOST=edge-sportsbet.ci.testenv.io
           ~/.stacks/scripts/deploy-service sportsbet design heathmont/$CIRCLE_PROJECT_REPONAME:$CIRCLE_BRANCH
-      - run: |
-          DOCKER_HOST=edge-sportsbet.ci.testenv.io
-          ~/.stacks/scripts/deploy-service sportsbet user-portal heathmont/sportsbet-user-portal:$CIRCLE_BRANCH
 
   publish:
     <<: *default
@@ -364,33 +282,15 @@ workflows:
           context: global
           requires:
             - dependencies
-      - build_id-portal:
-          context: global
-          requires:
-            - build
-      - build_user-portal:
-          context: global
-          requires:
-            - build
       - lint:
           context: global
           requires:
             - dependencies
             - build
-            - build_id-portal
-            - build_user-portal
       - test:
           context: global
           requires:
             - build
-      - bundlesize_id-portal:
-          context: global
-          requires:
-            - build_id-portal
-      - bundlesize_user-portal:
-          context: global
-          requires:
-            - build_user-portal
 
   build-branch:
     jobs:
@@ -422,26 +322,6 @@ workflows:
           requires:
             - build
 
-      - build_id-portal:
-          context: global
-          filters:
-            branches:
-              only:
-                - develop
-                - master
-          requires:
-            - build
-
-      - build_user-portal:
-          context: global
-          filters:
-            branches:
-              only:
-                - develop
-                - master
-          requires:
-            - build
-
       - lint:
           context: global
           filters:
@@ -452,8 +332,6 @@ workflows:
           requires:
             - dependencies
             - build
-            - build_id-portal
-            - build_user-portal
 
       - test:
           context: global
@@ -466,40 +344,6 @@ workflows:
             - dependencies
             - build
 
-      - bundlesize_id-portal:
-          context: global
-          filters:
-            branches:
-              only:
-                - develop
-                - master
-          requires:
-            - build_id-portal
-
-      - bundlesize_user-portal:
-          context: global
-          filters:
-            branches:
-              only:
-                - develop
-                - master
-          requires:
-            - build_user-portal
-
-      - build_user-portal_and_push:
-          context: global
-          filters:
-            branches:
-              only:
-                - develop
-                - master
-          requires:
-            - dependencies
-            - lint
-            - test
-            - build_user-portal
-            - bundlesize_user-portal
-
       - build_assets_and_push:
           context: global
           filters:
@@ -511,10 +355,6 @@ workflows:
             - dependencies
             - lint
             - test
-            - build_id-portal
-            - build_user-portal
-            - bundlesize_id-portal
-            - bundlesize_user-portal
 
       - build_docs_and_push:
           context: global
@@ -528,8 +368,6 @@ workflows:
             - lint
             - test
             - build_site
-            - bundlesize_id-portal
-            - bundlesize_user-portal
 
       - deploy_to_edge:
           context: global
@@ -546,7 +384,6 @@ workflows:
               only: master
           requires:
             - build_docs_and_push
-            - build_user-portal_and_push
 
       - tag_master_image:
           context: global
