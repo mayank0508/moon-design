@@ -29,9 +29,8 @@ aliases:
       key: project-deps-v3-{{ .Environment.CIRCLE_PROJECT_REPONAME }}-{{ checksum "yarn.lock" }}-{{ .Revision }}
       paths:
         - node_modules
-        - design/*/node_modules/*
+        - packages/*/node_modules/*
         - docs/node_modules/*
-        - portals/*/node_modules/*
 
   install_token: &install_token
     run:
@@ -137,8 +136,7 @@ jobs:
           paths:
             - node_modules
             - docs/node_modules/*
-            - design/*/node_modules/*
-            - portals/*/node_modules/*
+            - packages/*/node_modules/*
 
   lint:
     <<: *default
@@ -169,7 +167,7 @@ jobs:
       - persist_to_workspace:
           root: ./
           paths:
-            - design/*/lib/*
+            - packages/*/lib/*
 
   build_site:
     <<: *default
