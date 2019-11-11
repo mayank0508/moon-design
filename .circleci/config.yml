@@ -137,7 +137,7 @@ jobs:
       - attach_workspace:
           at: ./
       - run:
-          name: Running typescript build
+          name: Running build
           command: yarn build
       - persist_to_workspace:
           root: ./
