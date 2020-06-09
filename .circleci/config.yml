@@ -277,6 +277,7 @@ workflows:
                 - develop
                 - master
           requires:
+            - dependencies
             - build
 
       - lint:
@@ -310,6 +311,7 @@ workflows:
                 - master
           requires:
             - dependencies
+            - build
             - lint
             - test
             - build_site
