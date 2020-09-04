@@ -193,20 +193,6 @@ jobs:
       - run: git push --tags
       - *notify_on_slack
 
-  deploy_to_t2:
-    <<: *edge_build_image
-    steps:
-      - setup_remote_docker
-      - *docker_login
-      - *setup_github_ssh
-      - run: mkdir -p ~/.stacks
-      - run: |
-          git clone -b sportsbet-t2 git@github.com:coingaming/stacks.git ~/.stacks
-          ~/.stacks/scripts/circle-ci-setup
-      - run: |
-          DOCKER_HOST=edge-sportsbet.ci.testenv.io
-          ~/.stacks/scripts/deploy-service sportsbet design heathmont/$CIRCLE_PROJECT_REPONAME:$CIRCLE_BRANCH
-
   publish:
     <<: *default
     steps:
@@ -315,14 +301,6 @@ workflows:
             - lint
             - test
             - build_site
-
-      - deploy_to_t2:
-          context: global
-          filters:
-            branches:
-              only: develop
-          requires:
-            - build_docs_and_push
 
       - publish:
           context: global
