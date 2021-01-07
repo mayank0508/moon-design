@@ -121,14 +121,14 @@ jobs:
           at: ./
       - run: yarn lint
 
-  test:
-    <<: *default
-    resource_class: large
-    steps:
-      - checkout
-      - attach_workspace:
-          at: ./
-      - run: yarn test
+  # test:
+  #   <<: *default
+  #   resource_class: large
+  #   steps:
+  #     - checkout
+  #     - attach_workspace:
+  #         at: ./
+  #     - run: yarn test
 
   build:
     <<: *default
@@ -230,10 +230,10 @@ workflows:
           requires:
             - dependencies
             - build
-      - test:
-          context: global
-          requires:
-            - build
+      # - test:
+      #     context: global
+      #     requires:
+      #       - build
 
   build-branch:
     jobs:
@@ -277,16 +277,16 @@ workflows:
             - dependencies
             - build
 
-      - test:
-          context: global
-          filters:
-            branches:
-              only:
-                - develop
-                - master
-          requires:
-            - dependencies
-            - build
+      # - test:
+      #     context: global
+      #     filters:
+      #       branches:
+      #         only:
+      #           - develop
+      #           - master
+      #     requires:
+      #       - dependencies
+      #       - build
 
       - build_docs_and_push:
           context: global
@@ -299,7 +299,7 @@ workflows:
             - dependencies
             - build
             - lint
-            - test
+            # - test
             - build_site
 
       - publish:
