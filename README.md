@@ -1,5 +1,6 @@
 # Moon Design System
 
+<p align="center">
 [![npm (scoped)](https://img.shields.io/npm/v/@heathmont/moon-components)](https://www.npmjs.com/package/@heathmont/moon-components)
 
 [![Commitizen Friendly](https://img.shields.io/badge/commitizen-friendly-brightgreen.svg)](http://commitizen.github.io/cz-cli/)
